@@ -1,37 +1,23 @@
 FROM ubuntu:22.04
 
-# Stel de tijdzone in zonder interactieve prompts
 ENV DEBIAN_FRONTEND=noninteractive
+
+# Stel tijdzone in en installeer basistools
 RUN ln -fs /usr/share/zoneinfo/Europe/Amsterdam /etc/localtime && \
-    apt-get update && apt-get install -y tzdata && \
-    dpkg-reconfigure --frontend noninteractive tzdata
+    apt-get update && apt-get install -y tzdata bash locales x11vnc xvfb fluxbox git tigervnc-standalone-server tigervnc-common && \
+    dpkg-reconfigure --frontend noninteractive tzdata && \
+    locale-gen nl_NL.UTF-8 && update-locale LANG=nl_NL.UTF-8 && \
+    apt-get clean
 
-# Installeer benodigde pakketten
-RUN apt-get install -y \
-    bash \
-    locales \
-    x11vnc \
-    xvfb \
-    fluxbox \
-    novnc \
-    git \
-    && apt-get clean
+# Installeer noVNC
+RUN git clone https://github.com/novnc/noVNC.git /opt/noVNC && \
+    cd /opt/noVNC && git checkout v1.3.0 && \
+    ln -s /opt/noVNC/utils/novnc_proxy /opt/noVNC/utils/launch.sh
 
-# Voeg taalondersteuning toe
-RUN locale-gen nl_NL.UTF-8 && update-locale LANG=nl_NL.UTF-8
-
-# Voeg noVNC toe
-RUN git clone https://github.com/novnc/noVNC.git /opt/noVNC
-
-# Kopieer het startscript en geef het uitvoerrechten
+# Kopieer startscript
 COPY start.sh /start.sh
 RUN chmod +x /start.sh
 
-# Open de vereiste poorten
 EXPOSE 6080
 
-# Gebruik bash als standaard shell
-SHELL ["/bin/bash", "-c"]
-
-# Start script
 CMD ["/start.sh"]

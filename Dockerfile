@@ -1,7 +1,10 @@
 FROM ubuntu:22.04
 
-# Update en upgrade de container
-RUN apt-get update && apt-get upgrade -y
+# Stel de tijdzone in zonder interactieve prompts
+ENV DEBIAN_FRONTEND=noninteractive
+RUN ln -fs /usr/share/zoneinfo/Europe/Amsterdam /etc/localtime && \
+    apt-get update && apt-get install -y tzdata && \
+    dpkg-reconfigure --frontend noninteractive tzdata
 
 # Installeer benodigde pakketten
 RUN apt-get install -y \
